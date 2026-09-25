@@ -1,9 +1,9 @@
 FROM php:8.3-fpm
 
-# Instalar dependencias del sistema, Nginx y Supervisor
 RUN apt-get update && apt-get install -y --no-install-recommends \
       nginx \
       supervisor \
+      gettext-base \
       libfreetype6-dev \
       libjpeg62-turbo-dev \
       libxml2-dev \
@@ -19,17 +19,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && docker-php-ext-install /usr/src/php/ext/apcu \
   && rm -rf /var/lib/apt/lists/*
 
-# Configurar Nginx
-COPY nginx.conf /etc/nginx/sites-available/default
-
-# Configurar Supervisor
+COPY nginx.conf.template /etc/nginx/nginx.conf.template
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY php.ini ${PHP_INI_DIR}/php.ini
 
-# Copiar código de la aplicación
 WORKDIR /var/www/html
 COPY . .
 
-# Exponer puerto HTTP (Railway usa la variable PORT)
-EXPOSE 80
-
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/bin/sh", "-c", "envsubst '$${PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/sites-available/default && supervisord -c /etc/supervisor/conf.d/supervisord.conf"]
