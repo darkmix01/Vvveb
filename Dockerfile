@@ -19,13 +19,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && docker-php-ext-install /usr/src/php/ext/apcu \
   && rm -rf /var/lib/apt/lists/*
 
-# Copiar configs (nombres reales de tu repo)
 COPY nginx.conf /etc/nginx/sites-available/default
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY php.ini ${PHP_INI_DIR}/php.ini
+COPY php.ini /usr/local/etc/php/php.ini
 
 WORKDIR /var/www/html
 COPY . .
+
+RUN chown -R www-data:www-data /var/www/html \
+ && find /var/www/html -type d -exec chmod 755 {} \; \
+ && find /var/www/html -type f -exec chmod 644 {} \;
 
 EXPOSE 80
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
