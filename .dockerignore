@@ -1,2 +1,5 @@
 *
 !php.ini
+!nginx.conf
+!supervisord.conf
+!Dockerfile
