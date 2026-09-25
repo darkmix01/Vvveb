@@ -19,11 +19,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && docker-php-ext-install /usr/src/php/ext/apcu \
   && rm -rf /var/lib/apt/lists/*
 
-COPY nginx.conf.template /etc/nginx/nginx.conf.template
+# Copiar configs (nombres reales de tu repo)
+COPY nginx.conf /etc/nginx/sites-available/default
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY php.ini ${PHP_INI_DIR}/php.ini
 
 WORKDIR /var/www/html
 COPY . .
 
-CMD ["/bin/sh", "-c", "envsubst '$${PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/sites-available/default && supervisord -c /etc/supervisor/conf.d/supervisord.conf"]
+EXPOSE 80
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
